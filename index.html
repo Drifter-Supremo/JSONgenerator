@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freya Dataset Builder</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+            background: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        h1 {
+            color: #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.4;
+            resize: vertical;
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #saveButton {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #saveButton:hover {
+            background-color: #45a049;
+        }
+
+        #downloadButton {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        #downloadButton:hover {
+            background-color: #1e88e5;
+        }
+
+        #uploadButton {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        #uploadButton:hover {
+            background-color: #F57C00;
+        }
+
+        #clearButton {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #clearButton:hover {
+            background-color: #e53935;
+        }
+
+        #counter {
+            margin-top: 20px;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+
+        .search-container {
+            margin-top: 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            background: #2d2d2d;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .search-results {
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #2d2d2d;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .search-results::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .search-results::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        .search-results::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 4px;
+        }
+
+        .example-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #404040;
+        }
+
+        .example-item:last-child {
+            border-bottom: none;
+        }
+
+        .example-item pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #e0e0e0;
+            font-family: inherit;
+        }
+
+        .counter-stats {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stats-toggle {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #404040;
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stats-toggle:hover {
+            background-color: #404040;
+        }
+
+        .stats-panel {
+            margin-top: 15px;
+            background: #2d2d2d;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stats-tabs {
+            display: flex;
+            background: #262626;
+            border-bottom: 1px solid #404040;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .stats-tabs button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #b0b0b0;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .stats-tabs button.tab-active {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border-bottom: 2px solid #2196F3;
+        }
+
+        .stats-content {
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .tab-content h3 {
+            margin: 0 0 10px 0;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+
+        .stat-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #404040;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+        }
+
+        .stat-value {
+            color: #e0e0e0;
+        }
+
+        @media (max-width: 600px) {
+            .stats-tabs button {
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+
+            .stats-content {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Freya Dataset Builder</h1>
+    
+    <div class="form-group">
+        <label for="userInput">User Input:</label>
+        <textarea id="userInput" placeholder="Example: I had a bad day at work, Freya. Everything felt off."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="freyaOutput">Freya Output:</label>
+        <textarea id="freyaOutput" placeholder="Example: Ugh, that sucks. Want to vent, or want a distraction? I've got philosophical tangents, bad puns, and emotional support loaded in my code. Say the word."></textarea>
+    </div>
+
+    <div class="buttons">
+        <button id="saveButton">Save Example</button>
+        <button id="downloadButton">Download JSONL</button>
+        <button id="uploadButton">Upload Backup</button>
+        <button id="clearButton">Clear All</button>
+    </div>
+    <input type="file" id="fileInput" accept=".jsonl" style="display: none;">
+
+    <div class="counter-stats">
+        <span id="counter">Saved Examples: 0</span>
+        <button id="statsToggle" class="stats-toggle">📊 View Stats</button>
+    </div>
+
+    <div id="statsPanel" class="stats-panel" style="display: none;">
+        <div class="stats-tabs">
+            <button class="tab-active" data-tab="basic">Basic</button>
+            <button data-tab="words">Words</button>
+            <button data-tab="flow">Flow</button>
+        </div>
+        <div class="stats-content">
+            <div id="basicStats" class="tab-content"></div>
+            <div id="wordStats" class="tab-content" style="display: none;"></div>
+            <div id="flowStats" class="tab-content" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search saved examples..." />
+        <div id="searchResults" class="search-results" style="display: none;">
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize dataset from localStorage or create empty array
+        let dataset = JSON.parse(localStorage.getItem('freya_dataset') || '[]');
+        updateCounter();
+
+        // Update counter display
+        function updateCounter() {
+            document.getElementById('counter').textContent = `Saved Examples: ${dataset.length}`;
+        }
+
+        // Save example
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const userInput = document.getElementById('userInput').value.trim();
+            const freyaOutput = document.getElementById('freyaOutput').value.trim();
+
+            if (!userInput || !freyaOutput) {
+                alert('Please fill in both fields');
+                return;
+            }
+
+            // Format with required prefixes
+            const example = {
+                input: userInput.startsWith('user: ') ? userInput : `user: ${userInput}`,
+                output: freyaOutput.startsWith('Freya: ') ? freyaOutput : `Freya: ${freyaOutput}`
+            };
+
+            dataset.push(example);
+            localStorage.setItem('freya_dataset', JSON.stringify(dataset));
+            updateCounter();
+
+            // Clear input fields
+            document.getElementById('userInput').value = '';
+            document.getElementById('freyaOutput').value = '';
+        });
+
+        // Download JSONL
+        document.getElementById('downloadButton').addEventListener('click', () => {
+            if (dataset.length === 0) {
+                alert('No examples to download');
+                return;
+            }
+
+            // Convert to JSONL format (one JSON object per line)
+            const jsonl = dataset.map(example => JSON.stringify(example)).join('\n');
+            
+            // Create and trigger download
+            const blob = new Blob([jsonl], { type: 'application/x-jsonlines' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'freya_dataset.jsonl';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Clear all data
+        document.getElementById('clearButton').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all saved examples?')) {
+                dataset = [];
+                localStorage.removeItem('freya_dataset');
+                updateCounter();
+            }
+        });
+
+        // Upload backup
+        document.getElementById('uploadButton').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    // Split file into lines and parse each line
+                    const lines = e.target.result.split('\n').filter(line => line.trim());
+                    const newDataset = lines.map(line => {
+                        const example = JSON.parse(line);
+                        if (!example.input || !example.output) {
+                            throw new Error('Invalid format: Each line must have input and output fields');
+                        }
+                        return example;
+                    });
+
+                    // Replace current dataset
+                    dataset = newDataset;
+                    localStorage.setItem('freya_dataset', JSON.stringify(dataset));
+                    updateCounter();
+                    alert(`Successfully loaded ${dataset.length} examples`);
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                }
+            };
+            reader.onerror = () => alert('Error reading file');
+            reader.readAsText(file);
+
+            // Reset file input
+            event.target.value = '';
+        });
+
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const resultsContent = document.getElementById('resultsContent');
+
+        function truncateText(text, maxLength = 100) {
+            return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+        }
+
+        function displaySearchResults(results) {
+            if (results.length === 0) {
+                resultsContent.innerHTML = '<div class="example-item"><pre>No matching examples found.</pre></div>';
+                return;
+            }
+
+            resultsContent.innerHTML = results.map(example => `
+                <div class="example-item">
+                    <pre>${truncateText(example.input)}</pre>
+                    <pre>${truncateText(example.output)}</pre>
+                </div>
+            `).join('');
+        }
+
+        const performSearch = debounce((searchTerm) => {
+            searchTerm = searchTerm.toLowerCase();
+            
+            if (!searchTerm) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const results = dataset.filter(example => 
+                example.input.toLowerCase().includes(searchTerm) ||
+                example.output.toLowerCase().includes(searchTerm)
+            );
+
+            searchResults.style.display = 'block';
+            displaySearchResults(results);
+        }, 300);
+
+        searchInput.addEventListener('input', (e) => performSearch(e.target.value));
+
+        // Stats Panel Functionality
+        const statsToggle = document.getElementById('statsToggle');
+        const statsPanel = document.getElementById('statsPanel');
+        const tabButtons = document.querySelectorAll('.stats-tabs button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Toggle stats panel
+        statsToggle.addEventListener('click', () => {
+            const isHidden = statsPanel.style.display === 'none';
+            statsPanel.style.display = isHidden ? 'block' : 'none';
+            statsToggle.textContent = isHidden ? '📊 Hide Stats' : '📊 View Stats';
+            if (isHidden) {
+                // Update all stats when showing panel
+                updateStats();
+                // Ensure correct tab is shown
+                document.querySelector('.tab-active').click();
+            }
+        });
+
+        // Tab switching
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                console.log('Switching to tab:', tab);
+                
+                // Update active tab button
+                tabButtons.forEach(btn => btn.classList.remove('tab-active'));
+                button.classList.add('tab-active');
+                
+                // Show selected tab content and update stats
+                tabContents.forEach(content => {
+                    content.style.display = content.id === `${tab}Stats` ? 'block' : 'none';
+                });
+                
+                // Always update stats when switching tabs
+                updateStats();
+            });
+        });
+
+        // Initial tab content
+        document.querySelector('.tab-active').click();
+
+        // Stats calculation functions
+        function calculateBasicStats() {
+            const totalExamples = dataset.length;
+            if (totalExamples === 0) return '<div class="stat-item"><span class="stat-label">No examples yet</span></div>';
+
+            const avgInputLength = dataset.reduce((sum, ex) => sum + ex.input.length, 0) / totalExamples;
+            const avgOutputLength = dataset.reduce((sum, ex) => sum + ex.output.length, 0) / totalExamples;
+            const questionCount = dataset.reduce((sum, ex) => sum + (ex.output.match(/\?/g) || []).length, 0);
+            const exclamationCount = dataset.reduce((sum, ex) => sum + (ex.output.match(/!/g) || []).length, 0);
+
+            return `
+                <h3>Basic Metrics</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Examples:</span>
+                    <span class="stat-value">${totalExamples}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Average Input Length:</span>
+                    <span class="stat-value">${Math.round(avgInputLength)} chars</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Average Output Length:</span>
+                    <span class="stat-value">${Math.round(avgOutputLength)} chars</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Questions in Responses:</span>
+                    <span class="stat-value">${questionCount}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Exclamations in Responses:</span>
+                    <span class="stat-value">${exclamationCount}</span>
+                </div>
+            `;
+        }
+
+        function calculateWordStats() {
+            if (dataset.length === 0) return '<div class="stat-item"><span class="stat-label">No examples yet</span></div>';
+
+            console.log('Dataset for word analysis:', dataset);
+
+            // Get all words from Freya's responses
+            const words = dataset.flatMap(ex => {
+                // Get everything after "Freya:"
+                const freyaResponse = ex.output.split('Freya:')[1] || '';
+                console.log('Processing response:', freyaResponse);
+                
+                // Split into words, keeping more context
+                const outputWords = freyaResponse
+                    .trim()
+                    .split(/\s+/);
+                
+                console.log('Words found:', outputWords);
+                return outputWords;
+            });
+
+            console.log('All words:', words);
+
+            // Count word frequency (excluding only basic articles)
+            const commonWords = new Set(['a', 'an', 'the']);
+            const wordFreq = {};
+            words.forEach(word => {
+                const normalized = word.toLowerCase().replace(/[.,!?]$/, '');
+                if (normalized && !commonWords.has(normalized)) {
+                    wordFreq[normalized] = (wordFreq[normalized] || 0) + 1;
+                }
+            });
+
+            console.log('Word frequencies:', wordFreq);
+
+            // Sort words by frequency
+            const allWords = Object.entries(wordFreq)
+                .sort(([,a], [,b]) => b - a);
+
+            // Get first word of each response
+            const startWords = dataset.map(ex => {
+                const response = ex.output.split('Freya:')[1] || '';
+                const firstWord = response.trim().split(/\s+/)[0];
+                return firstWord;
+            }).filter(word => word).reduce((acc, word) => {
+                acc[word] = (acc[word] || 0) + 1;
+                return acc;
+            }, {});
+
+            const topStarts = Object.entries(startWords)
+                .sort(([,a], [,b]) => b - a);
+
+            console.log('Response starts:', topStarts);
+
+            return `
+                <h3>Word Analysis</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Words:</span>
+                    <span class="stat-value">${words.length} (${Object.keys(wordFreq).length} unique)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Words Used:</span>
+                    <span class="stat-value">${allWords.map(([word, count]) => 
+                        `${word}${count > 1 ? ` (${count})` : ''}`).join(', ')}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Response Starts:</span>
+                    <span class="stat-value">${topStarts.map(([word, count]) => 
+                        `${word}${count > 1 ? ` (${count})` : ''}`).join(', ') || 'None yet'}</span>
+                </div>
+            `;
+        }
+
+        function calculateFlowStats() {
+            if (dataset.length === 0) return '<div class="stat-item"><span class="stat-label">No examples yet</span></div>';
+
+            const questionResponses = dataset.filter(ex => ex.output.includes('?')).length;
+            const shortResponses = dataset.filter(ex => ex.output.length < 100).length;
+            const longResponses = dataset.filter(ex => ex.output.length > 200).length;
+            const personalPronouns = dataset.reduce((sum, ex) => {
+                const matches = ex.output.match(/\b(I|me|my|mine)\b/gi) || [];
+                return sum + matches.length;
+            }, 0);
+
+            return `
+                <h3>Interaction Patterns</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Responses with Questions:</span>
+                    <span class="stat-value">${questionResponses} (${Math.round(questionResponses/dataset.length*100)}%)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Short Responses:</span>
+                    <span class="stat-value">${shortResponses} (${Math.round(shortResponses/dataset.length*100)}%)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Long Responses:</span>
+                    <span class="stat-value">${longResponses} (${Math.round(longResponses/dataset.length*100)}%)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Personal Pronouns:</span>
+                    <span class="stat-value">${personalPronouns} (avg ${(personalPronouns/dataset.length).toFixed(1)} per response)</span>
+                </div>
+            `;
+        }
+
+        function updateStats() {
+            document.getElementById('basicStats').innerHTML = calculateBasicStats();
+            document.getElementById('wordStats').innerHTML = calculateWordStats();
+            document.getElementById('flowStats').innerHTML = calculateFlowStats();
+        }
+
+        // Update stats when dataset changes
+        const originalUpdateCounter = updateCounter;
+        updateCounter = function() {
+            originalUpdateCounter();
+            if (statsPanel.style.display !== 'none') {
+                updateStats();
+            }
+        };
+    </script>
+</body>
+</html>
